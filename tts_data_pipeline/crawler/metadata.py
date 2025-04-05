@@ -15,7 +15,7 @@ import random as randomlib
 
 async def get_metadata(
     text_url: str, audio_url: str, semaphore: asyncio.Semaphore, save_path: str = None
-) -> Dict[str, str] | None:
+) -> Dict[str, str]:
     """
     Asynchronously get audio metadata from an book URL.
 
@@ -74,15 +74,15 @@ def convert_duration(time_str: str, unit: str = "second") -> float | None:
             int(num) * 60**i for i, num in enumerate(reversed(time_values))
         )
 
-        match unit.lower():
-            case "second":
-                return total_seconds
-            case "minute":
-                return round(total_seconds / 60, 4)
-            case "hour":
-                return round(total_seconds / 3600, 4)
-            case _:
-                return None  # Invalid unit
+        if unit.lower() == "second":
+            return total_seconds
+        elif unit.lower() == "minute":
+            return round(total_seconds / 60, 4)
+        elif unit.lower() == "hour":
+            return round(total_seconds / 3600, 4)
+        else:
+            return None  # Invalid unit
+
     except ValueError:
         return None
 

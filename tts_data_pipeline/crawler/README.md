@@ -37,25 +37,28 @@ This script provides an asynchronous pipeline to download audiobooks, fetch meta
 
 Run the script with various options to control the workflow:
 
-```
+```bash
 $ python3 -m tts_data_pipeline.crawler --help
-
-usage: __main__.py [-h] [--save-urls] [--fetch-metadata] [--convert-metadata] [--download-books]
+usage: __main__.py [-h] [-s] [-f] [--process-metadata] [-d DOWNLOAD] [--name NAME] [--author AUTHOR] [--narrator NARRATOR]
 
 Audiobook Download Pipeline
 
 options:
-  -h, --help          show this help message and exit
-  --save-urls         Saving all audiobook URLs to a file
-  --fetch-metadata    Fetch metadata for each book
-  --convert-metadata  Convert metadata to CSV
-  --download-books    Download books
+  -h, --help            show this help message and exit
+  -s, --save-urls       Force to save all audiobook URLs to a file
+  -f, --fetch-metadata  Force to fetch metadata for each book
+  --process-metadata    Process and convert metadata files to a single CSV file
+  -d DOWNLOAD, --download DOWNLOAD
+                        Download books (available: all, none, query) (default: none)
+  --name NAME           Download books by name when --download is query
+  --author AUTHOR       Download books by author when --download is query
+  --narrator NARRATOR   Download books by narrator when --download is query
 ```
 
 You can combine multiple operations in a single command:
 
 ```bash
-python3 -m tts_data_pipeline.crawler --save-urls --fetch-metadata --convert-metadata --download-books
+python3 -m tts_data_pipeline.crawler --save-urls --fetch-metadata --convert-metadata --download "all"
 ```
 
 ### Expected Output
