@@ -4,14 +4,6 @@ This module is a crawler in the data pipeline for downloading audiobooks, which 
 
 The crawler is designed for Text-to-Speech (TTS) applications. It offers an efficient way to build a paired text-audio dataset by crawling, downloading, and organizing content from public web sources.
 
-## Features
-
-- **Asynchronous Processing**: Uses `asyncio` for concurrent downloads and processing
-- **Progress Tracking**: Visual progress bars for each download using `tqdm` and `rich`
-- **Comprehensive Metadata**: Collects and stores metadata for each audiobook
-- **Dual Content Types**: Downloads both audio files (MP3) and corresponding text files (PDF)
-- **Automatic Filtering**: Ensures that only books with both audio and text available are processed
-
 ## Installation
 
 Clone the repository and install dependencies:
@@ -37,7 +29,7 @@ This script provides an asynchronous pipeline to download audiobooks, fetch meta
 
 Run the script with various options to control the workflow:
 
-```bash
+```
 $ python3 -m tts_data_pipeline.crawler --help
 usage: __main__.py [-h] [-s] [-f] [--process-metadata] [-d DOWNLOAD] [--name NAME] [--author AUTHOR] [--narrator NARRATOR]
 
@@ -58,7 +50,7 @@ options:
 You can combine multiple operations in a single command:
 
 ```bash
-python3 -m tts_data_pipeline.crawler --save-urls --fetch-metadata --convert-metadata --download "all"
+python3 -m tts_data_pipeline.crawler --save-urls --fetch-metadata --process-metadata --download "all"
 ```
 
 ### Expected Output
