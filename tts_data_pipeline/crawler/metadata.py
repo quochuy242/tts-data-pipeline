@@ -2,16 +2,25 @@ import asyncio
 import json
 import os
 from pathlib import Path
+<<<<<<< HEAD
 from typing import List, Optional
 
 import httpx
 import pandas as pd
 from tqdm.asyncio import tqdm
+import requests
+=======
+from typing import Dict, List
+
+import httpx
+import pandas as pd
+
+from tts_data_pipeline import constants
+>>>>>>> 1559346 ([fix, feature]: convert all metadata json to a single file csv, so I have the valid download URL audio. The downloading progress will be completed soon)
 
 from tts_data_pipeline import constants, Book, Narrator, convert_duration
 from tts_data_pipeline.crawler import utils
 from tts_data_pipeline.crawler.utils import logger
-
 
 async def get_book_metadata(
   text_url: str, audio_url: str, semaphore: asyncio.Semaphore, save_path: str = ""
@@ -147,6 +156,96 @@ def convert_metadata_to_csv():
     logger.info("No metadata files were processed.")
 
 
-# TODO: Get metadata for each narrator from google sheet file
 def get_narrator_metadata():
-  pass
+  """
+  Get metadata for each narrator from google sheet file.
+  """
+  os.makedirs(os.path.dirname(constants.METADATA_NARRATOR_PATH), exist_ok=True)
+
+  response = requests.get(constants.NARRATOR_DOWNLOAD_URL)
+  if response.status_code != 200:
+      raise Exception(f"Error: {response.status_code}")
+
+  with open(constants.METADATA_NARRATOR_PATH, "wb") as f:
+      f.write(response.content)
+
+  return pd.read_csv(constants.METADATA_NARRATOR_PATH)
+
+# return metadata
+
+
+def convert_duration(time_str: str, unit: str = "second") -> float | None:
+    """
+    Convert a time string in the format "HH:MM:SS" or "MM:SS" to the specified unit (seconds, minutes, or hours).
+    """
+    if not isinstance(time_str, str):
+        return None
+
+    try:
+        time_values = time_str.split(":")
+        total_seconds = sum(
+            int(num) * 60**i for i, num in enumerate(reversed(time_values))
+        )
+
+        match unit.lower():
+            case "second":
+                return total_seconds
+            case "minute":
+                return round(total_seconds / 60, 4)
+            case "hour":
+                return round(total_seconds / 3600, 4)
+            case _:
+                return None  # Invalid unit
+    except ValueError:
+        return None
+
+
+def convert_metadata_to_csv():
+    """
+    Reads JSON metadata files, saves all metadata to a single file as CSV.
+    """
+    metadata_path = Path(constants.METADATA_SAVE_PATH)
+
+    # Create the output directory if it doesn't exist
+    metadata_path.mkdir(parents=True, exist_ok=True)
+
+    # Get all JSON files from the metadata directory
+    json_files = metadata_path.glob("*.json")
+    all_metadata = []
+
+    for json_file in json_files:
+        with open(json_file, "r", encoding="utf-8") as f:
+            try:
+                # Load JSON data
+                data = json.load(f)
+
+                # Convert duration to hours
+                if "duration" in data and isinstance(data["duration"], str):
+                    data["duration_hours"] = convert_duration(data["duration"], "hour")
+
+                # Append to the list
+                all_metadata.append(data)
+            except json.JSONDecodeError:
+                print(f"Error parsing JSON file: {json_file}")
+
+    # Convert to DataFrame
+    if all_metadata:
+        df = pd.DataFrame(all_metadata)
+
+        # Save the combined metadata as CSV
+        df.to_csv(constants.METADATA_BOOK_PATH, index=True)
+
+        print(
+            f"Metadata processing complete. {len(all_metadata)} files processed. Saved to {constants.METADATA_BOOK_PATH}"
+        )
+    else:
+        print("No metadata files were processed.")
+
+
+def get_valid_audio_urls() -> List[str]:
+    """
+    Get a list of valid audio URLs from the metadata CSV file.
+    """
+    return pd.read_csv(constants.METADATA_BOOK_PATH)["audio_url"].tolist()
+
+#  convert all metadata json to a single file csv, so I have the valid download URL audio. The downloading progress will be completed soon)
